@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scrollable List - HTML, CSS, JS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom font for better aesthetics */
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      /* Custom CSS from index.css */
+      .transform-selected {
+        transform: scale(1.2);
+        /* Adjusted transition duration to be slightly faster for a snappier feel */
+        transition: transform 0.3s ease-in-out,
+          background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        z-index: 1; /* Bring selected item to front */
+        background-color: #3b82f6; /* Change background to blue for selected item */
+      }
+
+      li:not(.transform-selected) {
+        transform: scale(0.9);
+        transition: transform 0.3s ease-in-out,
+          background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        background-color: #10b981; /* Default green for unselected items */
+      }
+
+      /* Hide scrollbar for a cleaner look (optional) */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-700 w-full min-h-screen flex flex-col justify-center items-center p-4 sm:p-8 md:p-12"
+  >
+    <div class="flex items-center justify-center w-full max-w-5xl mx-auto">
+      <ul
+        id="listContainer"
+        class="flex justify-start items-center border border-black px-4 py-8 rounded-2xl w-full flex-nowrap overflow-x-scroll scrollbar-hide"
+      >
+        <!-- List items will be initialized here by JavaScript -->
+      </ul>
+    </div>
+    <div class="flex gap-4 mt-8 justify-center items-center w-full">
+      <button
+        id="prevButton"
+        class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200"
+      >
+        Previous
+      </button>
+      <button
+        id="nextButton"
+        class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200"
+      >
+        Next
+      </button>
+    </div>
+
+    <script>
+      const data = Array.from({ length: 10 }, (_, i) => i + 1);
+      let selected = 1;
+      const ulRef = document.getElementById("listContainer");
+      const prevButton = document.getElementById("prevButton");
+      const nextButton = document.getElementById("nextButton");
+
+      // Function to initialize list items (called only once)
+      function initializeListItems() {
+        data.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          li.dataset.item = item; // Store item number for easy lookup
+
+          // Base classes that don't change
+          li.className = `
+                    min-w-[calc(100%-2rem)] sm:min-w-[calc(50%-1rem)] md:min-w-[calc(33.333%-1rem)]
+                    h-72 rounded-md flex items-center justify-center text-white text-3xl font-bold flex-shrink-0
+                `;
+          ulRef.appendChild(li);
+        });
+      }
+
+      // Function to update classes based on selected item (without re-rendering)
+      function updateListItemClasses() {
+        const listItems = ulRef.children; // Get all li elements
+
+        Array.from(listItems).forEach((li) => {
+          const itemNumber = parseInt(li.dataset.item);
+          if (itemNumber === selected) {
+            li.classList.add("transform-selected", "shadow-xl");
+            li.classList.remove("bg-green-500"); // Ensure default green is removed if selected
+          } else {
+            li.classList.remove("transform-selected", "shadow-xl");
+            li.classList.add("bg-green-500"); // Ensure default green is added if not selected
+          }
+        });
+      }
+
+      // Function to scroll the selected item into view
+      function scrollToSelectedItem() {
+        if (ulRef) {
+          const selectedLi = ulRef.querySelector(`li[data-item="${selected}"]`);
+
+          if (selectedLi) {
+            selectedLi.scrollIntoView({
+              behavior: "smooth",
+              inline: "center",
+            });
+          }
+        }
+      }
+
+      // Event listener for Previous button
+      prevButton.addEventListener("click", () => {
+        selected = Math.max(1, selected - 1);
+        updateListItemClasses(); // Update classes only
+        scrollToSelectedItem(); // Scroll to the new selected item
+      });
+
+      // Event listener for Next button
+      nextButton.addEventListener("click", () => {
+        selected = Math.min(data.length, selected + 1);
+        updateListItemClasses(); // Update classes only
+        scrollToSelectedItem(); // Scroll to the new selected item
+      });
+
+      // Initial setup when the page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeListItems(); // Create the DOM elements once
+        updateListItemClasses(); // Set initial selected state classes
+        scrollToSelectedItem(); // Scroll to the initial selected item
+      });
+    </script>
+  </body>
+</html>
